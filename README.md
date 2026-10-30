@@ -57,29 +57,34 @@ The core allocation engine uses **mathematical optimization** with **Python** an
 
 ```
 syntaxes/
-├── fairshift/
+├── api/                    # FastAPI Transport Layer
+│   ├── __init__.py
+│   ├── main.py             # Pure transport REST API endpoints (zero business logic changes)
+│   └── requirements.txt    # fastapi, uvicorn, python-multipart, httpx
+├── frontend/               # React + TypeScript + Vite Web Application
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx
+│       ├── index.css
+│       ├── types/index.ts
+│       ├── api/client.ts
+│       └── components/     # Modular tab & dashboard components
+├── fairshift/              # Core Mathematical Engine (UNTOUCHED & PRESERVED)
 │   ├── __init__.py
 │   ├── models.py           # Dataclasses (Applicant, Program, AllocationResult, ValidationResult)
 │   ├── optimizer.py        # Google OR-Tools CP-SAT multi-stage allocation engine
 │   ├── validator.py        # Independent auditor enforcing rules & scenario checks
 │   ├── analyzer.py         # Withdrawal, capacity change, and appeal scenario analysis
-│   ├── data_manager.py     # Sample data generation (200 applicants, 10 programs), CSV/Excel I/O
+│   ├── data_manager.py     # Sample data generation, CSV/Excel I/O, auto-reconciliation
 │   └── database.py         # SQLite persistence for runs, snapshots, audit events, and undo stack
-├── tests/
-│   ├── __init__.py
-│   ├── test_eligibility_capacity.py
-│   ├── test_at_most_one.py
-│   ├── test_withdrawals.py
-│   ├── test_capacity_changes.py
-│   ├── test_preferences_reassignments.py
-│   ├── test_appeals.py
-│   ├── test_validator.py
-│   ├── test_solver_statuses.py
-│   ├── test_data_operations.py
-│   ├── test_database_persistence.py
-│   └── test_undo_operations.py
-├── app.py                  # Streamlit web application
-├── requirements.txt        # Python package dependencies
+├── tests/                  # Automated pytest Suite (40/40 Passing)
+├── app.py                  # Streamlit Web Application (Fallback Intact)
+├── requirements.txt        # Python backend dependencies (UNTOUCHED)
+├── fairshift_data.db       # Persistent SQLite Database (PRESERVED)
 └── README.md
 ```
 
@@ -89,41 +94,52 @@ syntaxes/
 
 ### Prerequisites
 - Python 3.10, 3.11, or 3.12 (64-bit). *(Python 3.12 recommended for OR-Tools pre-built wheels)*.
+- Node.js v18+ and npm.
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-If running with a specific Python installation (such as the Python 3.12 environment):
+### 1. Install Backend & API Dependencies
 ```powershell
 & "C:\Users\ASUS\Python312\python.exe" -m pip install -r requirements.txt
+& "C:\Users\ASUS\Python312\python.exe" -m pip install -r api/requirements.txt
+```
+
+### 2. Install Frontend Dependencies
+```powershell
+cd frontend
+npm install
+cd ..
 ```
 
 ---
 
 ## Running the Application
 
-Launch the Streamlit web application:
-```bash
-streamlit run app.py
-```
-Or via the Python executable:
+### Modern React + TypeScript + Vite Frontend (Primary UI)
+
+1. **Start the FastAPI Backend Adapter (Port 8000)**:
 ```powershell
-& "C:\Users\ASUS\Python312\python.exe" -m streamlit run app.py
+& "C:\Users\ASUS\Python312\python.exe" -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-The application will open in your browser at `http://localhost:8501`.
+2. **Start the Vite React Dev Server (Port 3000)**:
+```powershell
+cd frontend
+npm run dev
+```
+
+Open your browser at **`http://localhost:3000`** to experience the modern React UI.
+
+### Streamlit Web Application (Fallback UI)
+The original Streamlit application remains completely intact and runnable:
+```powershell
+& "C:\Users\ASUS\Python312\python.exe" -m streamlit run app.py --server.port 8501
+```
+Available at `http://localhost:8501`.
 
 ---
 
 ## Running Automated Tests
 
-Run the complete test suite with `pytest`:
-```bash
-pytest -v
-```
-Or via the Python executable:
+Run the complete 40-test suite with `pytest`:
 ```powershell
 & "C:\Users\ASUS\Python312\python.exe" -m pytest -v
 ```
